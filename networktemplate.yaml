@@ -1,0 +1,53 @@
+Resources:
+  ClovisVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags: 
+        - Key: "Name"
+          Value: "ClovisVPC launced by cloudformation"
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref ClovisVPC
+      CidrBlock: 192.168.128.0/18
+      MapPublicIpOnLaunch: 'true'
+      Tags: 
+        - Key: "Name"
+          Value: "ClovisPublicSubnet launced by cloudformation"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref ClovisVPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref ClovisVPC
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+       RouteTableId: !Ref PublicRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId: !Ref InternetGateway
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+Outputs:
+  VPC: 
+    Description: My Main VPC
+    Value: !Ref ClovisVPC
+    Export:
+      Name: MainVPC
+  PublicSubnet: 
+    Description: My Public Subnet
+    Value: !Ref PublicSubnet
+    Export:
+      Name: ClovisSubnet
